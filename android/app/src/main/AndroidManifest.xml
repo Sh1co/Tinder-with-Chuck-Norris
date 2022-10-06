@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sh1co.tinder_with_chuck_norris.tinder_with_chuck_norris">
+    <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="tinder_with_chuck_norris"
         android:name="${applicationName}"
