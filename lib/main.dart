@@ -42,8 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
       var response = await Dio().get('https://api.chucknorris.io/jokes/random');
       var jsonData = jsonDecode(response.toString());
 
+      var jokeModel = Joke.fromJson(jsonData);
+
       setState(() {
-        _joke = jsonData["value"];
+        _joke = jokeModel.value;
       });
     } catch (e) {
       print(e);
