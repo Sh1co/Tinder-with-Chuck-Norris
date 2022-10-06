@@ -23,6 +23,10 @@ A Tinder style app that gives you Chuck Norris jokes from [api.chucknorris.io](h
 
 Project is developed using flutter for the Cross-platform Mobile Development with Flutter course at Innopolis University for fall 2022
 
+## Download
+
+[Lastest APK version](https://github.com/Sh1co/Tinder-with-Chuck-Norris/releases/latest/download/chuck-norris.apk)
+
 <!-- CONTACT -->
 ## Contact
 
