@@ -18,11 +18,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Tinder with Chuck Norris',
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Tinder with Chuck Norris'),
     );
   }
 }
@@ -89,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: Text(widget.title),
+          leading: Image(image: AssetImage('graphics/chuck-norris-icon.png')),
         ),
         body: Container(
             child: Column(children: [
