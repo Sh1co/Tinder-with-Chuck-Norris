@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     addInitItem();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 10; i++) {
       addItem();
     }
 
@@ -89,12 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: Text(widget.title),
-          leading: Image(image: AssetImage('graphics/chuck-norris-icon.png')),
+          leading:
+              const Image(image: AssetImage('graphics/chuck-norris-icon.png')),
         ),
-        body: Container(
-            child: Column(children: [
-          Container(
-            height: 550,
+        body: Column(children: [
+          SizedBox(
+            height: 600,
             child: SwipeCards(
               matchEngine: _matchEngine,
               itemBuilder: (BuildContext context, int index) {
@@ -115,28 +115,20 @@ class _MyHomePageState extends State<MyHomePage> {
                           Text(
                             _swipeItems[index].content,
                             style: const TextStyle(
-                                fontSize: 20, color: Colors.white),
+                                fontSize: 25, color: Colors.white),
                             textAlign: TextAlign.center,
                           )
                         ],
                       ),
                     ));
               },
-              onStackFinished: () {
-                _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                  content: const Text("Stack Finished"),
-                  duration: Duration(milliseconds: 500),
-                ));
-              },
-              itemChanged: (SwipeItem item, int index) {
-                print("item: ${item.content}, index: $index");
-              },
-              upSwipeAllowed: true,
+              onStackFinished: () {},
+              upSwipeAllowed: false,
               fillSpace: true,
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(0, 25, 0, 25),
+            padding: const EdgeInsets.fromLTRB(0, 13, 0, 13),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -171,15 +163,18 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-        ])));
+        ]));
   }
 }
 
 @JsonSerializable()
 class Joke {
+  //Ignore used here because this needs to be the same name as the field name returned from the chuck norris API
+  // ignore: non_constant_identifier_names
   final String icon_url, id, url, value;
 
   Joke(
+      // ignore: non_constant_identifier_names
       {required this.icon_url,
       required this.id,
       required this.url,
