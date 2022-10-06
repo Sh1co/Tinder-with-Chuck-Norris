@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'main.g.dart';
 
 void main() {
   runApp(const MyApp());
@@ -72,4 +75,19 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+@JsonSerializable()
+class Joke {
+  final String icon_url, id, url, value;
+
+  Joke(
+      {required this.icon_url,
+      required this.id,
+      required this.url,
+      required this.value});
+
+  factory Joke.fromJson(Map<String, dynamic> json) => _$JokeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$JokeToJson(this);
 }
