@@ -141,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(15.0),
                   shape: const CircleBorder(),
                   child: const Icon(
-                    Icons.arrow_downward_outlined,
+                    Icons.thumb_down,
                     color: Colors.white,
                     size: 35.0,
                   ),
@@ -155,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(15.0),
                   shape: const CircleBorder(),
                   child: const Icon(
-                    Icons.arrow_upward_outlined,
+                    Icons.thumb_up,
                     color: Colors.white,
                     size: 35.0,
                   ),
