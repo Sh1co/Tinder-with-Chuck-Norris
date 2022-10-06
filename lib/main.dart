@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:swipe_cards/draggable_card.dart';
+import 'package:swipe_cards/swipe_cards.dart';
 
 part 'main.g.dart';
 
@@ -35,47 +37,140 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String _joke = "";
+  final List<SwipeItem> _swipeItems = <SwipeItem>[];
+  late MatchEngine _matchEngine;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
-  void _getJoke() async {
+  Future<Joke> _getJoke() async {
     try {
       var response = await Dio().get('https://api.chucknorris.io/jokes/random');
       var jsonData = jsonDecode(response.toString());
 
-      var jokeModel = Joke.fromJson(jsonData);
+      Joke joke = Joke.fromJson(jsonData);
 
-      setState(() {
-        _joke = jokeModel.value;
-      });
+      return joke;
     } catch (e) {
-      print(e);
+      Joke failed = Joke(
+          icon_url: "",
+          id: "",
+          url: "",
+          value: "Failed to load joke, check internet connection");
+      return failed;
     }
+  }
+
+  Future<void> addItem() async {
+    Joke joke = await _getJoke();
+    _swipeItems.add(SwipeItem(
+        content: joke.value,
+        onSlideUpdate: (SlideRegion? region) async {
+          addItem();
+        }));
+  }
+
+  void addInitItem() {
+    _swipeItems.add(SwipeItem(content: "Swipe to get new Chuck Norris jokes"));
+  }
+
+  @override
+  void initState() {
+    addInitItem();
+    for (int i = 0; i < 3; i++) {
+      addItem();
+    }
+
+    _matchEngine = MatchEngine(swipeItems: _swipeItems);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              '$_joke',
-              style: Theme.of(context).textTheme.headline6,
-              textAlign: TextAlign.center,
-            ),
-          ],
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text(widget.title),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _getJoke,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+        body: Container(
+            child: Column(children: [
+          Container(
+            height: 550,
+            child: SwipeCards(
+              matchEngine: _matchEngine,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                    alignment: Alignment.center,
+                    color: Colors.brown,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Image(
+                              image: AssetImage('graphics/chuck-norris.png'),
+                              width: 300,
+                            ),
+                          ),
+                          Text(
+                            _swipeItems[index].content,
+                            style: const TextStyle(
+                                fontSize: 20, color: Colors.white),
+                            textAlign: TextAlign.center,
+                          )
+                        ],
+                      ),
+                    ));
+              },
+              onStackFinished: () {
+                _scaffoldKey.currentState?.showSnackBar(const SnackBar(
+                  content: const Text("Stack Finished"),
+                  duration: Duration(milliseconds: 500),
+                ));
+              },
+              itemChanged: (SwipeItem item, int index) {
+                print("item: ${item.content}, index: $index");
+              },
+              upSwipeAllowed: true,
+              fillSpace: true,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(0, 25, 0, 25),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                RawMaterialButton(
+                  onPressed: () {
+                    _matchEngine.currentItem?.nope();
+                  },
+                  elevation: 2.0,
+                  fillColor: Colors.red,
+                  padding: const EdgeInsets.all(15.0),
+                  shape: const CircleBorder(),
+                  child: const Icon(
+                    Icons.arrow_downward_outlined,
+                    color: Colors.white,
+                    size: 35.0,
+                  ),
+                ),
+                RawMaterialButton(
+                  onPressed: () {
+                    _matchEngine.currentItem?.like();
+                  },
+                  elevation: 2.0,
+                  fillColor: Colors.green,
+                  padding: const EdgeInsets.all(15.0),
+                  shape: const CircleBorder(),
+                  child: const Icon(
+                    Icons.arrow_upward_outlined,
+                    color: Colors.white,
+                    size: 35.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ])));
   }
 }
 
