@@ -3,14 +3,13 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:swipe_cards/draggable_card.dart';
 import 'package:swipe_cards/swipe_cards.dart';
 import 'package:soar_quest/soar_quest.dart';
 import 'package:tinder_with_chuck_norris/firebase_options.dart';
 
 part 'main.g.dart';
 
-late final SQCollection jokesCollection;
+late final SQCollection jokesCollection, categories;
 
 void main() async {
   await SQApp.init(
@@ -19,24 +18,30 @@ void main() async {
     firebaseOptions: DefaultFirebaseOptions.currentPlatform,
   );
 
+  await UserSettings.setSettings([
+    SQEnumField(SQStringField("Category", value: "random"),
+        options: ["random", "animal", "career", "celebrity"])
+  ]);
+
   jokesCollection = FirestoreCollection(
     id: "Jokes",
     fields: [SQStringField("Joke")],
     updates: false,
+    adds: false,
     );
 
 // TODO: Fetch categories from api and add a drop down for them
-// TODO: Get jokes based on selected category
 // TODO: Handle no internet
 
   SQApp.run([
-    const JokesScreen("Favourites"),
-    CollectionScreen(collection: jokesCollection)
+    const JokesScreen("Jokes", icon: Icons.comment),
+    CollectionScreen(collection: jokesCollection, icon: Icons.favorite),
+    UserSettings.settingsScreen(),
   ]);
 }
 
 class JokesScreen extends Screen {
-  const JokesScreen(super.title, {super.key});
+  const JokesScreen(super.title, {super.icon, super.key});
   @override
   createState() => JokesScreenState();
 }
@@ -47,7 +52,10 @@ class JokesScreenState extends ScreenState<JokesScreen> {
 
   Future<Joke> _getJoke() async {
     try {
-      var response = await Dio().get('https://api.chucknorris.io/jokes/random');
+      String queryUrl = 'https://api.chucknorris.io/jokes/random';
+      final String category = UserSettings().getSetting("Category");
+      if (category != "random") queryUrl += "?category=$category";
+      var response = await Dio().get(queryUrl);
       var jsonData = jsonDecode(response.toString());
 
       Joke joke = Joke.fromJson(jsonData);
@@ -67,9 +75,18 @@ class JokesScreenState extends ScreenState<JokesScreen> {
     Joke joke = await _getJoke();
     _swipeItems.add(SwipeItem(
         content: joke.value,
-        onSlideUpdate: (SlideRegion? region) async {
+        nopeAction: () => addItem(),
+        likeAction: () {
           addItem();
+
+          final SwipeItem? currentItem = _matchEngine.currentItem;
+          if (currentItem == null) return;
+          jokesCollection.saveDoc(jokesCollection.newDoc(initialFields: [
+            SQStringField("Joke", value: currentItem.content)
+          ]));
         }));
+    _matchEngine = MatchEngine(swipeItems: _swipeItems);
+    setState(() {});
   }
 
   void addInitItem() {
@@ -78,12 +95,9 @@ class JokesScreenState extends ScreenState<JokesScreen> {
 
   @override
   void initState() {
-    addInitItem();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 2; i++) {
       addItem();
     }
-
-    _matchEngine = MatchEngine(swipeItems: _swipeItems);
     super.initState();
   }
 
@@ -97,6 +111,10 @@ class JokesScreenState extends ScreenState<JokesScreen> {
 
   @override
   Widget screenBody(BuildContext context) {
+    if (_swipeItems.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(children: [
           SizedBox(
         height: 450,
@@ -137,41 +155,12 @@ class JokesScreenState extends ScreenState<JokesScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                RawMaterialButton(
-                  onPressed: () {
-                    _matchEngine.currentItem?.nope();
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.red,
-                  padding: const EdgeInsets.all(15.0),
-                  shape: const CircleBorder(),
-                  child: const Icon(
-                    Icons.thumb_down,
-                    color: Colors.white,
-                    size: 35.0,
-                  ),
-                ),
-                RawMaterialButton(
-              onPressed: () async {
-                    _matchEngine.currentItem?.like();
-                final SwipeItem? currentItem = _matchEngine.currentItem;
-                if (currentItem == null) return;
-
-                await jokesCollection.saveDoc(jokesCollection.newDoc(
-                    initialFields: [
-                      SQStringField("Joke", value: currentItem.content)
-                    ]));
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.green,
-                  padding: const EdgeInsets.all(15.0),
-                  shape: const CircleBorder(),
-                  child: const Icon(
-                    Icons.thumb_up,
-                    color: Colors.white,
-                    size: 35.0,
-                  ),
-                ),
+            SQButton.icon(Icons.thumb_down,
+                onPressed: () => _matchEngine.currentItem?.nope(),
+                iconSize: 50),
+            SQButton.icon(Icons.thumb_up,
+                onPressed: () => _matchEngine.currentItem?.like(),
+                iconSize: 50),
               ],
             ),
           ),
