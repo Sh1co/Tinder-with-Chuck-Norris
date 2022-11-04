@@ -274,7 +274,7 @@ packages:
     source: hosted
     version: "6.1.4"
   firebase_auth:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_auth
       sha256: d033f297b086ed883c9e23c00ce1529799aeecfa8164ee504d50cb4b3437257f
@@ -869,10 +869,11 @@ packages:
   soar_quest:
     dependency: "direct main"
     description:
-      name: soar_quest
-      sha256: "49b3e7d3ba06250b77481e3367df9cede61135af9e8808b6652078732e27d67b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "031ffd8cd0e2740ec4e5c59854d02faa1cdd4839"
+      url: "https://github.com/ElBatanony/soar_quest.git"
+    source: git
     version: "0.5.0"
   source_gen:
     dependency: transitive
