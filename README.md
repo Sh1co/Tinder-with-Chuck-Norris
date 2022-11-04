@@ -14,7 +14,7 @@
 
 ## About the project
 
-A Tinder style app that gives you Chuck Norris jokes from [api.chucknorris.io](https://api.chucknorris.io).
+A Tinder style app that gives you Chuck Norris jokes from [api.chucknorris.io](https://api.chucknorris.io). This app is build using the [Soar Quest](soar.quest) flutter framework.
 
 <p float="left">
 <img src="graphics/Screenshot_1665062916.png" alt="main" style="width:200px;"/>
