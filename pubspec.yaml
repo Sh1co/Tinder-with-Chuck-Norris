@@ -33,6 +33,7 @@ dependencies:
   json_annotation: ^4.7.0
   swipe_cards: ^1.0.0
   soar_quest: ^0.5.0
+  firebase_core:
 
 dev_dependencies:
   flutter_test:
