@@ -1,16 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:swipe_cards/swipe_cards.dart';
 import 'package:soar_quest/soar_quest.dart';
-import 'package:tinder_with_chuck_norris/firebase_options.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-part 'main.g.dart';
+import 'package:tinder_with_chuck_norris/cn_api.dart';
+import 'package:tinder_with_chuck_norris/device_id.dart';
+import 'package:tinder_with_chuck_norris/firebase/firebase_options.dart';
 
 late final SQCollection favJokesCollection, categories;
 
@@ -21,16 +14,14 @@ void main() async {
     firebaseOptions: DefaultFirebaseOptions.currentPlatform,
   );
 
-  List<dynamic> jokesCategories = await getCategories();
+  List<dynamic> jokesCategories = await ChuckNorrisApi.getCategories();
 
   await UserSettings.setSettings([
     SQEnumField(SQStringField("Category", value: "random"),
         options: jokesCategories)
   ]);
 
-  String userID = await _getUUID() ?? "sharedID";
-
-  print("USER ID : $userID");
+  String userID = await DeviceIdentifier.getUUID();
 
   favJokesCollection = FirestoreCollection(
       id: "Favourites",
@@ -46,44 +37,6 @@ void main() async {
   ]);
 }
 
-Future<List<dynamic>> getCategories() async {
-  try {
-    var response =
-        await Dio().get("https://api.chucknorris.io/jokes/categories");
-    String responseStr = response.toString();
-    final jokesCategories = [];
-    String categorie = "";
-    for (var i = 0; i < responseStr.length; i++) {
-      if (responseStr[i] == '[') {
-        continue;
-      } else if (responseStr[i] == ',' || responseStr[i] == ']') {
-        jokesCategories.add(categorie);
-        categorie = "";
-        i++;
-      } else {
-        categorie = categorie + responseStr[i];
-      }
-    }
-    return jokesCategories;
-  } on Exception {
-    return [];
-  }
-}
-
-Future<String> _getUUID() async {
-  final prefs = await SharedPreferences.getInstance();
-  String? deviceId = prefs.getString("DeviceID");
-  if (deviceId == null) {
-    const _chars =
-        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-    Random _rnd = Random();
-    deviceId = String.fromCharCodes(Iterable.generate(
-        12, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
-    prefs.setString("DeviceID", deviceId);
-  }
-  return deviceId;
-}
-
 class JokesScreen extends Screen {
   const JokesScreen(super.title, {super.icon, super.key});
   @override
@@ -94,29 +47,8 @@ class JokesScreenState extends ScreenState<JokesScreen> {
   final List<SwipeItem> _swipeItems = <SwipeItem>[];
   late MatchEngine _matchEngine;
 
-  Future<Joke> _getJoke() async {
-    try {
-      String queryUrl = 'https://api.chucknorris.io/jokes/random';
-      final String category = UserSettings().getSetting("Category");
-      if (category != "random") queryUrl += "?category=$category";
-      var response = await Dio().get(queryUrl);
-      var jsonData = jsonDecode(response.toString());
-
-      Joke joke = Joke.fromJson(jsonData);
-
-      return joke;
-    } catch (e) {
-      Joke failed = Joke(
-          icon_url: "",
-          id: "",
-          url: "",
-          value: "Failed to load joke, check internet connection");
-      return failed;
-    }
-  }
-
   Future<void> addItem() async {
-    Joke joke = await _getJoke();
+    Joke joke = await ChuckNorrisApi.getJoke();
     _swipeItems.add(SwipeItem(
         content: joke.value,
         nopeAction: () => addItem(),
@@ -129,7 +61,6 @@ class JokesScreenState extends ScreenState<JokesScreen> {
             SQStringField("Joke", value: currentItem.content)
           ]));
         }));
-    _matchEngine = MatchEngine(swipeItems: _swipeItems);
     setState(() {});
   }
 
@@ -139,9 +70,10 @@ class JokesScreenState extends ScreenState<JokesScreen> {
 
   @override
   void initState() {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 5; i++) {
       addItem();
     }
+    _matchEngine = MatchEngine(swipeItems: _swipeItems);
     super.initState();
   }
 
@@ -210,22 +142,4 @@ class JokesScreenState extends ScreenState<JokesScreen> {
       ),
     ]);
   }
-}
-
-@JsonSerializable()
-class Joke {
-  //Ignore used here because this needs to be the same name as the field name returned from the chuck norris API
-  // ignore: non_constant_identifier_names
-  final String icon_url, id, url, value;
-
-  Joke(
-      // ignore: non_constant_identifier_names
-      {required this.icon_url,
-      required this.id,
-      required this.url,
-      required this.value});
-
-  factory Joke.fromJson(Map<String, dynamic> json) => _$JokeFromJson(json);
-
-  Map<String, dynamic> toJson() => _$JokeToJson(this);
 }
