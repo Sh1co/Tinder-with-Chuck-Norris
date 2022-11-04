@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:swipe_cards/swipe_cards.dart';
 import 'package:soar_quest/soar_quest.dart';
 import 'package:tinder_with_chuck_norris/firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'main.g.dart';
 
@@ -20,24 +23,18 @@ void main() async {
 
   List<dynamic> jokesCategories = await getCategories();
 
-  // print(jsonData.toString());
-  // jsonData.forEach((key, value) {
-  //   print(value.toString());
-  // });
-
   await UserSettings.setSettings([
     SQEnumField(SQStringField("Category", value: "random"),
         options: jokesCategories)
   ]);
 
-  favJokesCollection = FirestoreCollection(
-    id: "Favourites",
-    fields: [SQStringField("Joke")],
-    updates: false,
-    adds: false,
-  );
 
-// TODO: Fetch categories from api and add a drop down for them
+  favJokesCollection = FirestoreCollection(
+      id: "Favourites",
+      fields: [SQStringField("Joke")],
+      updates: false,
+      adds: false,
+      parentDoc: SQDoc(userID, collection: SQAuth.usersCollection));
 
   SQApp.run([
     const JokesScreen("Jokes", icon: Icons.comment),
@@ -47,20 +44,28 @@ void main() async {
 }
 
 Future<List<dynamic>> getCategories() async {
-  var response = await Dio().get("https://api.chucknorris.io/jokes/categories");
-  String responseStr = response.toString();
-  final jokesCategories = [];
-  String categorie = "";
-  for (var i = 0; i < responseStr.length; i++) {
-    if (responseStr[i] == '[') {
-      continue;
-    } else if (responseStr[i] == ',' || responseStr[i] == ']') {
-      jokesCategories.add(categorie);
-      categorie = "";
-      i++;
-    } else {
-      categorie = categorie + responseStr[i];
+  try {
+    var response =
+        await Dio().get("https://api.chucknorris.io/jokes/categories");
+    String responseStr = response.toString();
+    final jokesCategories = [];
+    String categorie = "";
+    for (var i = 0; i < responseStr.length; i++) {
+      if (responseStr[i] == '[') {
+        continue;
+      } else if (responseStr[i] == ',' || responseStr[i] == ']') {
+        jokesCategories.add(categorie);
+        categorie = "";
+        i++;
+      } else {
+        categorie = categorie + responseStr[i];
+      }
     }
+    return jokesCategories;
+  } on Exception {
+    return [];
+  }
+}
   }
   return jokesCategories;
 }
