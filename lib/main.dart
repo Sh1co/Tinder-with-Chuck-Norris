@@ -9,7 +9,7 @@ import 'package:tinder_with_chuck_norris/firebase_options.dart';
 
 part 'main.g.dart';
 
-late final SQCollection jokesCollection, categories;
+late final SQCollection favJokesCollection, categories;
 
 void main() async {
   await SQApp.init(
@@ -18,26 +18,51 @@ void main() async {
     firebaseOptions: DefaultFirebaseOptions.currentPlatform,
   );
 
+  List<dynamic> jokesCategories = await getCategories();
+
+  // print(jsonData.toString());
+  // jsonData.forEach((key, value) {
+  //   print(value.toString());
+  // });
+
   await UserSettings.setSettings([
     SQEnumField(SQStringField("Category", value: "random"),
-        options: ["random", "animal", "career", "celebrity"])
+        options: jokesCategories)
   ]);
 
-  jokesCollection = FirestoreCollection(
-    id: "Jokes",
+  favJokesCollection = FirestoreCollection(
+    id: "Favourites",
     fields: [SQStringField("Joke")],
     updates: false,
     adds: false,
-    );
+  );
 
 // TODO: Fetch categories from api and add a drop down for them
-// TODO: Handle no internet
 
   SQApp.run([
     const JokesScreen("Jokes", icon: Icons.comment),
-    CollectionScreen(collection: jokesCollection, icon: Icons.favorite),
+    CollectionScreen(collection: favJokesCollection, icon: Icons.favorite),
     UserSettings.settingsScreen(),
   ]);
+}
+
+Future<List<dynamic>> getCategories() async {
+  var response = await Dio().get("https://api.chucknorris.io/jokes/categories");
+  String responseStr = response.toString();
+  final jokesCategories = [];
+  String categorie = "";
+  for (var i = 0; i < responseStr.length; i++) {
+    if (responseStr[i] == '[') {
+      continue;
+    } else if (responseStr[i] == ',' || responseStr[i] == ']') {
+      jokesCategories.add(categorie);
+      categorie = "";
+      i++;
+    } else {
+      categorie = categorie + responseStr[i];
+    }
+  }
+  return jokesCategories;
 }
 
 class JokesScreen extends Screen {
@@ -81,7 +106,7 @@ class JokesScreenState extends ScreenState<JokesScreen> {
 
           final SwipeItem? currentItem = _matchEngine.currentItem;
           if (currentItem == null) return;
-          jokesCollection.saveDoc(jokesCollection.newDoc(initialFields: [
+          favJokesCollection.saveDoc(favJokesCollection.newDoc(initialFields: [
             SQStringField("Joke", value: currentItem.content)
           ]));
         }));
@@ -104,7 +129,7 @@ class JokesScreenState extends ScreenState<JokesScreen> {
   @override
   AppBar appBar(BuildContext context) {
     return AppBar(
-          title: Text(widget.title),
+      title: Text(widget.title),
       leading: const Image(image: AssetImage('graphics/chuck-norris-icon.png')),
     );
   }
@@ -116,54 +141,54 @@ class JokesScreenState extends ScreenState<JokesScreen> {
     }
 
     return Column(children: [
-          SizedBox(
+      SizedBox(
         height: 450,
-            child: SwipeCards(
-              matchEngine: _matchEngine,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                    alignment: Alignment.center,
-                    color: Colors.brown,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Image(
-                              image: AssetImage('graphics/chuck-norris.png'),
-                              width: 300,
-                            ),
-                          ),
-                          Text(
-                            _swipeItems[index].content,
-                        style:
-                            const TextStyle(fontSize: 25, color: Colors.white),
-                            textAlign: TextAlign.center,
-                          )
-                        ],
+        child: SwipeCards(
+          matchEngine: _matchEngine,
+          itemBuilder: (BuildContext context, int index) {
+            return Container(
+                alignment: Alignment.center,
+                color: Colors.brown,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Image(
+                          image: AssetImage('graphics/chuck-norris.png'),
+                          width: 200,
+                        ),
                       ),
-                    ));
-              },
-              onStackFinished: () {},
-              upSwipeAllowed: false,
-              fillSpace: true,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 13, 0, 13),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+                      Text(
+                        _swipeItems[index].content,
+                        style:
+                            const TextStyle(fontSize: 15, color: Colors.white),
+                        textAlign: TextAlign.center,
+                      )
+                    ],
+                  ),
+                ));
+          },
+          onStackFinished: () {},
+          upSwipeAllowed: false,
+          fillSpace: true,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(0, 13, 0, 13),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
             SQButton.icon(Icons.thumb_down,
                 onPressed: () => _matchEngine.currentItem?.nope(),
                 iconSize: 50),
             SQButton.icon(Icons.thumb_up,
                 onPressed: () => _matchEngine.currentItem?.like(),
                 iconSize: 50),
-              ],
-            ),
-          ),
+          ],
+        ),
+      ),
     ]);
   }
 }
