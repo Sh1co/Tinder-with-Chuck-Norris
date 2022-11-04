@@ -28,6 +28,9 @@ void main() async {
         options: jokesCategories)
   ]);
 
+  String userID = await _getUUID() ?? "sharedID";
+
+  print("USER ID : $userID");
 
   favJokesCollection = FirestoreCollection(
       id: "Favourites",
@@ -66,8 +69,19 @@ Future<List<dynamic>> getCategories() async {
     return [];
   }
 }
+
+Future<String> _getUUID() async {
+  final prefs = await SharedPreferences.getInstance();
+  String? deviceId = prefs.getString("DeviceID");
+  if (deviceId == null) {
+    const _chars =
+        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+    Random _rnd = Random();
+    deviceId = String.fromCharCodes(Iterable.generate(
+        12, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+    prefs.setString("DeviceID", deviceId);
   }
-  return jokesCategories;
+  return deviceId;
 }
 
 class JokesScreen extends Screen {
