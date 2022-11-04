@@ -2,11 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:swipe_cards/draggable_card.dart';
 import 'package:swipe_cards/swipe_cards.dart';
-
-part 'main.g.dart';
+import 'package:tinder_with_chuck_norris/api/cn_api.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,27 +38,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<SwipeItem> _swipeItems = <SwipeItem>[];
   late MatchEngine _matchEngine;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-
-  Future<Joke> _getJoke() async {
-    try {
-      var response = await Dio().get('https://api.chucknorris.io/jokes/random');
-      var jsonData = jsonDecode(response.toString());
-
-      Joke joke = Joke.fromJson(jsonData);
-
-      return joke;
-    } catch (e) {
-      Joke failed = Joke(
-          icon_url: "",
-          id: "",
-          url: "",
-          value: "Failed to load joke, check internet connection");
-      return failed;
-    }
-  }
+  final CNApi _cnApi = CNApi();
 
   Future<void> addItem() async {
-    Joke joke = await _getJoke();
+    Joke joke = await _cnApi.getJoke();
     _swipeItems.add(SwipeItem(
         content: joke.value,
         onSlideUpdate: (SlideRegion? region) async {
@@ -95,37 +76,8 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Column(children: [
           SizedBox(
             height: 600,
-            child: SwipeCards(
-              matchEngine: _matchEngine,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                    alignment: Alignment.center,
-                    color: Colors.brown,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Image(
-                              image: AssetImage('graphics/chuck-norris.png'),
-                              width: 300,
-                            ),
-                          ),
-                          Text(
-                            _swipeItems[index].content,
-                            style: const TextStyle(
-                                fontSize: 25, color: Colors.white),
-                            textAlign: TextAlign.center,
-                          )
-                        ],
-                      ),
-                    ));
-              },
-              onStackFinished: () {},
-              upSwipeAllowed: false,
-              fillSpace: true,
-            ),
+            child: JokesSwipeCards(
+                matchEngine: _matchEngine, swipeItems: _swipeItems),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 13, 0, 13),
@@ -167,20 +119,48 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-@JsonSerializable()
-class Joke {
-  //Ignore used here because this needs to be the same name as the field name returned from the chuck norris API
-  // ignore: non_constant_identifier_names
-  final String icon_url, id, url, value;
+class JokesSwipeCards extends StatelessWidget {
+  const JokesSwipeCards({
+    super.key,
+    required MatchEngine matchEngine,
+    required List<SwipeItem> swipeItems,
+  })  : _matchEngine = matchEngine,
+        _swipeItems = swipeItems;
 
-  Joke(
-      // ignore: non_constant_identifier_names
-      {required this.icon_url,
-      required this.id,
-      required this.url,
-      required this.value});
+  final MatchEngine _matchEngine;
+  final List<SwipeItem> _swipeItems;
 
-  factory Joke.fromJson(Map<String, dynamic> json) => _$JokeFromJson(json);
-
-  Map<String, dynamic> toJson() => _$JokeToJson(this);
+  @override
+  Widget build(BuildContext context) {
+    return SwipeCards(
+      matchEngine: _matchEngine,
+      itemBuilder: (BuildContext context, int index) {
+        return Container(
+            alignment: Alignment.center,
+            color: Colors.brown,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Image(
+                      image: AssetImage('graphics/chuck-norris.png'),
+                      width: 300,
+                    ),
+                  ),
+                  Text(
+                    _swipeItems[index].content,
+                    style: const TextStyle(fontSize: 25, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  )
+                ],
+              ),
+            ));
+      },
+      onStackFinished: () {},
+      upSwipeAllowed: false,
+      fillSpace: true,
+    );
+  }
 }
