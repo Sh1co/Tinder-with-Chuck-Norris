@@ -5,41 +5,45 @@ import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:swipe_cards/draggable_card.dart';
 import 'package:swipe_cards/swipe_cards.dart';
+import 'package:soar_quest/soar_quest.dart';
+import 'package:tinder_with_chuck_norris/firebase_options.dart';
 
 part 'main.g.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+late final SQCollection jokesCollection;
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+void main() async {
+  await SQApp.init(
+    "Tinder with Chuck Norris",
+    theme: ThemeData(primarySwatch: Colors.deepOrange),
+    firebaseOptions: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Tinder with Chuck Norris',
-      theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
-      ),
-      home: const MyHomePage(title: 'Tinder with Chuck Norris'),
+  jokesCollection = FirestoreCollection(
+    id: "Jokes",
+    fields: [SQStringField("Joke")],
+    updates: false,
     );
-  }
+
+// TODO: Fetch categories from api and add a drop down for them
+// TODO: Get jokes based on selected category
+// TODO: Handle no internet
+
+  SQApp.run([
+    const JokesScreen("Favourites"),
+    CollectionScreen(collection: jokesCollection)
+  ]);
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
+class JokesScreen extends Screen {
+  const JokesScreen(super.title, {super.key});
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  createState() => JokesScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class JokesScreenState extends ScreenState<JokesScreen> {
   final List<SwipeItem> _swipeItems = <SwipeItem>[];
   late MatchEngine _matchEngine;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   Future<Joke> _getJoke() async {
     try {
@@ -84,17 +88,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
+  AppBar appBar(BuildContext context) {
+    return AppBar(
           title: Text(widget.title),
-          leading:
-              const Image(image: AssetImage('graphics/chuck-norris-icon.png')),
-        ),
-        body: Column(children: [
+      leading: const Image(image: AssetImage('graphics/chuck-norris-icon.png')),
+    );
+  }
+
+  @override
+  Widget screenBody(BuildContext context) {
+    return Column(children: [
           SizedBox(
-            height: 600,
+        height: 450,
             child: SwipeCards(
               matchEngine: _matchEngine,
               itemBuilder: (BuildContext context, int index) {
@@ -114,8 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           Text(
                             _swipeItems[index].content,
-                            style: const TextStyle(
-                                fontSize: 25, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 25, color: Colors.white),
                             textAlign: TextAlign.center,
                           )
                         ],
@@ -147,8 +152,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 RawMaterialButton(
-                  onPressed: () {
+              onPressed: () async {
                     _matchEngine.currentItem?.like();
+                final SwipeItem? currentItem = _matchEngine.currentItem;
+                if (currentItem == null) return;
+
+                await jokesCollection.saveDoc(jokesCollection.newDoc(
+                    initialFields: [
+                      SQStringField("Joke", value: currentItem.content)
+                    ]));
                   },
                   elevation: 2.0,
                   fillColor: Colors.green,
@@ -163,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-        ]));
+    ]);
   }
 }
 
