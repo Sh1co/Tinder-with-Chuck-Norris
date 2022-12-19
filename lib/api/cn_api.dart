@@ -37,10 +37,8 @@ class ChuckNorrisApi {
       final String? category = UserSettings().getSetting("Category");
       // if (category == null) UserSettings.setSettings(settings)
       if (category != "random" && category != null) {
-        print(category + "*************************");
         queryUrl += "?category=$category";
       }
-      print("Passed**************************************");
       var response = await Dio().get(queryUrl);
       var jsonData = jsonDecode(response.toString());
 
@@ -53,7 +51,6 @@ class ChuckNorrisApi {
           id: "",
           url: "",
           value: "Failed to load joke, check internet connection");
-      print(e);
       return failed;
     }
   }
