@@ -25,6 +25,7 @@ class ChuckNorrisApi {
           categorie = categorie + responseStr[i];
         }
       }
+      jokesCategories.add("random");
       return jokesCategories;
     } on Exception {
       return [];
