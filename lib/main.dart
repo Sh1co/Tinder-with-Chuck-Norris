@@ -5,7 +5,7 @@ import 'package:tinder_with_chuck_norris/api/cn_api.dart';
 import 'package:tinder_with_chuck_norris/device_id.dart';
 import 'package:tinder_with_chuck_norris/firebase/firebase_options.dart';
 
-late final SQCollection favJokesCollection, categories;
+late final SQCollection categories;
 
 void main() async {
   await SQApp.init(
@@ -24,16 +24,9 @@ void main() async {
 
   String userID = await DeviceIdentifier.getUUID();
 
-  favJokesCollection = FirestoreCollection(
-      id: "Favourites",
-      fields: [SQStringField("Joke")],
-      updates: false,
-      adds: false,
-      parentDoc: SQDoc(userID, collection: SQAuth.usersCollection));
-
   SQApp.run([
     const JokesScreen("Jokes", icon: Icons.comment),
-    CollectionScreen(collection: favJokesCollection, icon: Icons.favorite),
+    FavoriteJokes.getFavoriteScreen(userID),
     UserSettings.settingsScreen(),
   ]);
 }
