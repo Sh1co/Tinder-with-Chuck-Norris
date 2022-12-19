@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:swipe_cards/swipe_cards.dart';
 import 'package:soar_quest/soar_quest.dart';
-import 'package:tinder_with_chuck_norris/cn_api.dart';
+import 'package:tinder_with_chuck_norris/api/cn_api.dart';
 import 'package:tinder_with_chuck_norris/device_id.dart';
 import 'package:tinder_with_chuck_norris/firebase/firebase_options.dart';
 
@@ -15,6 +15,7 @@ void main() async {
   );
 
   List<dynamic> jokesCategories = await ChuckNorrisApi.getCategories();
+  jokesCategories.add("random");
 
   await UserSettings.setSettings([
     SQEnumField(SQStringField("Category", value: "random"),
