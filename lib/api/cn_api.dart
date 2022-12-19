@@ -2,13 +2,44 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:soar_quest/soar_quest.dart';
 
 part 'cn_api.g.dart';
 
-class CNApi {
-  Future<Joke> getJoke() async {
+class ChuckNorrisApi {
+  static Future<List<dynamic>> getCategories() async {
     try {
-      var response = await Dio().get('https://api.chucknorris.io/jokes/random');
+      var response =
+          await Dio().get("https://api.chucknorris.io/jokes/categories");
+      String responseStr = response.toString();
+      final jokesCategories = [];
+      String categorie = "";
+      for (var i = 0; i < responseStr.length; i++) {
+        if (responseStr[i] == '[') {
+          continue;
+        } else if (responseStr[i] == ',' || responseStr[i] == ']') {
+          jokesCategories.add(categorie);
+          categorie = "";
+          i++;
+        } else {
+          categorie = categorie + responseStr[i];
+        }
+      }
+      return jokesCategories;
+    } on Exception {
+      return [];
+    }
+  }
+
+  static Future<Joke> getJoke() async {
+    try {
+      String queryUrl = 'https://api.chucknorris.io/jokes/random';
+      final String? category = UserSettings().getSetting("Category");
+      // if (category == null) UserSettings.setSettings(settings)
+      if (category != "random" && category != null) {
+        queryUrl += "?category=$category";
+      }
+      var response = await Dio().get(queryUrl);
       var jsonData = jsonDecode(response.toString());
 
       Joke joke = Joke.fromJson(jsonData);
