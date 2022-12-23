@@ -6,11 +6,11 @@ on:
 
 env:
   GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-  GITHUB_PR_TITLE: ${{ github.event.pull.request.title }}  
+  GITHUB_PR_TITLE: ${{ github.event.pull_request.title }}  
 
 jobs:
   changelog:
-    # if: startsWith(env.GITHUB_PR_TITLE, 'Upgrade version to') != true
+    if: ${{ startsWith(env.GITHUB_PR_TITLE, 'Upgrade version to') != true }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
