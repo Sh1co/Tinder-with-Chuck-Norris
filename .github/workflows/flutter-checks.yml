@@ -14,6 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/app-build
+        secrets:
+          FIREBASE_SECRETS_CONTENT: ${{ secrets.FIREBASE_SECRETS_CONTENT }}
       - run: flutter analyze
 
   tests:
@@ -22,5 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/app-build
+        secrets:
+          FIREBASE_SECRETS_CONTENT: ${{ secrets.FIREBASE_SECRETS_CONTENT }}
       - run: flutter test --coverage .
       - uses: codecov/codecov-action@v3
