@@ -100,3 +100,9 @@ fi
 
 git push --atomic origin $TARGET_BRANCH $NEW_VERSION
 
+git branch -D temp-merge-branch
+
+if command -v gh &> /dev/null; then
+  # flutter build apk
+  gh release create $NEW_VERSION -F CHANGELOG.md --latest build/app/outputs/flutter-apk/app-release.apk
+fi
