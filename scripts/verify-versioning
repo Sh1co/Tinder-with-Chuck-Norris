@@ -1,0 +1,13 @@
+#!/bin/sh
+
+PENDING_CHANGES_FILE="$1"
+
+if [ ! -f "$PENDING_CHANGES_FILE" ] || [ ! -s "$PENDING_CHANGES_FILE" ]; then
+  echo Please add pending changes indicator to the file $PENDING_CHANGES_FILE. && exit 1
+fi
+
+if cat "$PENDING_CHANGES_FILE" | tr '\n' ' ' | grep -e "^\s*\(major\|minor\|patch\)\s*$" -v; then
+  echo
+  echo "The pending changes must either be major, minor or patch"
+  exit 1
+fi

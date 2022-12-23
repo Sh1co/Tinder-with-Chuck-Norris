@@ -1,0 +1,23 @@
+name: pull-request
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
+jobs:
+  changelog:
+    if: startsWith(github.event.pull_request.title, 'Upgrade version to') != true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./scripts/verify-changelog pending/changes/$GITHUB_PR_NUMBER.md
+
+  versioning:
+    if: startsWith(github.event.pull_request.title, 'Upgrade version to') != true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./scripts/verify-versioning pending/versions/$GITHUB_PR_NUMBER.asc

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+CHANGELOG_FILE="$1"
+
+if [ ! -f "$CHANGELOG_FILE" ] || [ ! -s "$CHANGELOG_FILE" ]; then
+  echo Please add a changelog to the file $CHANGELOG_FILE. && exit 1
+fi
+if [ ! -z "$(tail -c 1 "$CHANGELOG_FILE")" ]; then
+  echo The changelog file is missing end-of-line in the end of the file. Please set it up in your IDE or editor. && exit 1
+fi
+if [ -z "$(tail -c 2 "$CHANGELOG_FILE" | head -c 1)" ]; then
+  echo The changelog file contains more than 1 end-of-line in the end of the file. Please remove all the redundant lines. && exit 1
+fi
+
+MR_ID="$(basename ${1%.*})"
+
+if grep -e "^- .* (\!$MR_ID)" "$CHANGELOG_FILE" -v; then
+  echo
+  echo "The lines above are improperly formatted. Use the following format:"
+  echo "- Some Title (!$MR_ID)"
+  exit 1
+fi
