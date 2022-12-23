@@ -1,0 +1,102 @@
+#!/bin/sh
+# The script is expected to run from the root folder of the project
+
+set -e
+
+export TARGET_BRANCH="${TARGET_BRANCH:-main}"
+
+git checkout ${TARGET_BRANCH}
+
+git pull
+
+export RELEASE_COMMIT_SHA="$(git rev-parse --short HEAD)"
+
+git checkout -b temp-merge-branch
+
+export PENDING_PATH="pending/versions"
+
+# Figure out what's the latest version from changelog and the one acessible from the current commit
+export CHANGELOG_VERSION=$(grep -e '^## v[0-9]\+\.[0-9]\+\.[0-9]\+' CHANGELOG.md -m 1 | sed 's/## v\([0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}\).*/\1/')
+
+export LATEST_TAG_VERSION="$($(realpath $(dirname "$0"))/latest-tag)"
+
+if [ "$CHANGELOG_VERSION" != "$LATEST_TAG_VERSION" ]; then
+  echo "Changelog version doesn't match latest tag version"
+  # If the latests version don't match, we need to check if we're above the latest version
+  if git merge-base --is-ancestor HEAD $LATEST_TAG_VERSION; then
+    echo "You're trying to release an old commit"
+    exit 1
+  else
+    # Here we need to merge changes with the latest version to generate proper changelog
+    export RELEASE_COMMIT_DATE="$(git show -s --format=%ci "$LATEST_TAG_VERSION")"
+
+    # It could be the case that there are merge conflicts with the latest version
+    # It could happen, e.g., if the app supports the disabled versions and one commit introduced them and another deleted them
+    if ! git merge --no-ff --no-commit "$LATEST_TAG_VERSION"; then
+      echo "Merge conflicts with the latest tag version discovered"
+
+      if [ -z "$MERGE_CONFLICT_RESOLVING_SCRIPT" ]; then
+        echo "Merge conflicts discovered, but merge conflict resolving script is absent, can't resolve them"
+        exit 1
+      else
+        $MERGE_CONFLICT_RESOLVING_SCRIPT
+      fi
+    fi
+  fi
+else
+  export RELEASE_COMMIT_DATE="$(git show -s --format=%ci)"
+fi
+
+if [ -z "$VERSION_TO_INCREASE" ]; then
+  echo "Detecting version level to increase"
+  if grep -e 'major' $PENDING_PATH/*.asc > /dev/null 2>&1; then
+    export VERSION_TO_INCREASE=M;
+  elif grep -e 'minor' $PENDING_PATH/*.asc > /dev/null 2>&1; then
+    export VERSION_TO_INCREASE=m;
+  fi
+fi
+
+export VERSION_TO_INCREASE="${VERSION_TO_INCREASE:-p}"
+
+echo "Version level to increase is '$VERSION_TO_INCREASE'"
+
+export NEW_VERSION="v$($(realpath $(dirname "$0"))/semver-increase $LATEST_TAG_VERSION $VERSION_TO_INCREASE)"
+
+if echo $NEW_VERSION | grep -v -e '^v[0-9]\+\.[0-9]\+\.[0-9]\+$' > /dev/null; then
+  # Error is stored in $NEW_VERSION
+  echo $NEW_VERSION
+  exit 1
+fi
+
+echo "Upgrading from version $LATEST_TAG_VERSION to version $NEW_VERSION"
+
+echo $RELEASE_COMMIT_SHA
+
+"$(realpath $(dirname "$0"))"/generate-changelog-version "$NEW_VERSION" "$RELEASE_COMMIT_SHA"
+
+echo "Clearing pending changes"
+git rm $PENDING_PATH/*.asc -f
+
+git commit -a -m "Upgrade version to $NEW_VERSION"
+
+git tag $NEW_VERSION
+
+git checkout $TARGET_BRANCH
+
+# Merge to the target branch and check if there are any merge conflicts with the target branch
+if ! git merge --no-ff --no-commit temp-merge-branch; then
+  MERGE_CONFLICTS=true
+fi
+
+if [ ! -z "$MERGE_CONFLICTS" ]; then
+  echo "Merge conflicts with $TARGET_BRANCH discovered"
+  if [ -z "$MERGE_CONFLICT_RESOLVING_SCRIPT" ]; then
+    echo "Merge conflict resolving script doesn't exist, can't resolve the merge conflicts"
+    exit 1
+  else
+    $MERGE_CONFLICT_RESOLVING_SCRIPT
+  fi
+fi
+
+git push --atomic origin $TARGET_BRANCH $NEW_VERSION
+
