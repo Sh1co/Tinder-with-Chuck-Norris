@@ -1,7 +1,7 @@
 name: app-build
 
-secrets:
-  FIREBASE_SECRETS_CONTENT:
+inputs:
+  firebase_secrets_content:
     required: true
 
 runs:
@@ -16,4 +16,4 @@ runs:
     - run: echo $FIREBASE_SECRETS_CONTENT | base64 --decode > lib/firebase/secrets.dart
       shell: bash
       env:
-        FIREBASE_SECRETS_CONTENT: ${{ secrets.FIREBASE_SECRETS_CONTENT }}
+        FIREBASE_SECRETS_CONTENT: ${{ inputs.firebase_secrets_content }}
