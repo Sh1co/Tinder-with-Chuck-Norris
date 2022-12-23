@@ -1,0 +1,17 @@
+#!/bin/sh
+
+export VERSION="$1"
+export VERSION_TO_INCREASE="$2"
+
+if [ "$VERSION_TO_INCREASE" = 'M' ]; then
+  export NEW_VERSION="$(($(echo "$VERSION" | sed 's/^\([0-9]\{1,\}\)\..\{1,\}$/\1/') + 1)).0.0"
+elif [ "$VERSION_TO_INCREASE" = 'm' ]; then
+  export NEW_VERSION="$(echo "$VERSION" | sed 's/[0-9]\{1,\}\.[0-9]\{1,\}$//')$(($(echo "$VERSION" | sed 's/^.\{1,\}\.\([0-9]\{1,\}\)\..\{1,\}$/\1/') + 1)).0"
+elif [ "$VERSION_TO_INCREASE" = 'p' ]; then
+  export NEW_VERSION="$(echo "$VERSION" | sed 's/[0-9]\{1,\}$//')$(($(echo "$VERSION" | sed 's/^.\{1,\}\.\([0-9]\{1,\}\)$/\1/') + 1))"
+else
+  echo Wrong version to increase
+  exit 1
+fi
+
+printf "%s" "$NEW_VERSION"

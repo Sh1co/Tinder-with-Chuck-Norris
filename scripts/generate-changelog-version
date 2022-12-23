@@ -1,0 +1,33 @@
+#!/bin/sh
+# The script is expected to run from the folder with CHANGELOG.md, typically it's root folder of the project
+
+if [ $# -eq 0 ]; then
+  echo "Please provide build version e.g. ./generate-changelog-version 0.1.0"
+  exit 1
+fi
+
+VERSION=$1
+COMMIT_SHA=$2
+# INTERNAL_BUILD=$3
+DATE="$(date +%Y-%m-%d)"
+
+if [ `uname` = "Darwin" ]; then
+  INPLACE=""
+else
+  INPLACE="CHANGELOG.md"
+fi
+
+SOURCE="@$COMMIT_SHA"
+
+# if [ ! -z "$INTERNAL_BUILD" ]; then
+#   SOURCE="$SOURCE [Internal build: $INTERNAL_BUILD]"
+# fi
+
+# Insert version and Items ater line 2 to CHANGELOG.md
+printf "## $VERSION $SOURCE ($DATE)\n\nItems:\n\n" | sed -i "$INPLACE" -e "2r /dev/stdin" CHANGELOG.md
+
+# Order files in pending/changes by the time they were added to git, format their contents and add them to CHANGELOG.md after line 5 (Items:)
+git ls-files -z -- "pending/changes" | xargs -0 -n1 -I{} -- sh -c 'git log -1 --format="%at {}" {} | tail -1' | sort | cut -d " " -f2- | xargs cat | sed -e 's/^/  /' | sed -i "$INPLACE" -e '5r /dev/stdin' CHANGELOG.md
+
+# Remove changelogs from the changelog folders
+git rm pending/changes/*.md
