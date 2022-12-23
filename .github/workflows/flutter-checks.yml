@@ -13,11 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with-version: '3.3.9'
-        channel: 'stable'
-      - run: flutter --version
-      - run: flutter pub get
+      - uses: ./.github/actions/app-build
       - run: flutter analyze
 
   tests:
@@ -25,10 +21,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.3.9'
-          channel: 'stable'
-      - run: flutter pub get
+      - uses: ./.github/actions/app-build
       - run: flutter test --coverage .
       - uses: codecov/codecov-action@v3
