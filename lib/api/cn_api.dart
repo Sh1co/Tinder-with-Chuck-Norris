@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:soar_quest/soar_quest.dart';
 
@@ -33,13 +34,19 @@ class ChuckNorrisApi {
   }
 
   static Future<Joke> getJoke() async {
+    String queryUrl = 'https://api.chucknorris.io/jokes/random';
     try {
-      String queryUrl = 'https://api.chucknorris.io/jokes/random';
       final String? category = UserSettings().getSetting("Category");
       // if (category == null) UserSettings.setSettings(settings)
       if (category != "random" && category != null) {
         queryUrl += "?category=$category";
       }
+    } catch (e) {
+      if (kDebugMode) {
+        print("User settings not setup.");
+      }
+    }
+    try {
       var response = await Dio().get(queryUrl);
       var jsonData = jsonDecode(response.toString());
 
