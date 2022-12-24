@@ -12,6 +12,27 @@
   </p>
 </div>
 
+<p align="center">
+    <a href="https://github.com/goar5670/Tinder-with-Chuck-Norris/actions/workflows/pdd.yml">
+        <img
+          src="https://github.com/goar5670/Tinder-with-Chuck-Norris/actions/workflows/pdd.yml/badge.svg"
+          alt="pdd"
+        />
+    </a>
+    <a href="https://github.com/goar5670/Tinder-with-Chuck-Norris/actions/workflows/flutter-checks.yml">
+        <img
+          src="https://github.com/goar5670/Tinder-with-Chuck-Norris/actions/workflows/flutter-checks.yml/badge.svg"
+          alt="flutter-checks"
+        />
+    </a>
+    <a href="CONTRIBUTING.md">
+        <img
+          src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"
+          alt="PRs Welcome"
+        />
+    </a>
+</p>
+
 ## About the project
 
 A Tinder style app that gives you Chuck Norris jokes from [api.chucknorris.io](https://api.chucknorris.io). This app is build using the [Soar Quest](soar.quest) flutter framework.
