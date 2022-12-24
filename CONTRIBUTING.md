@@ -29,6 +29,6 @@ In order to pass the checks in the CI, you have to make sure of the following:
 
 **`pending/versions` files structure:
 - The file should be named as `<pr_id>.asc` where `<pr_id>` is the pull request unique id (can be found in the PR url).
-- The first and only line should contain one of "patch", "minor", or "major" respectively with no leading or trailing spaces
+- The first and only line should contain one of "patch", "minor", or "major" depending on the changes (refer to semver semantics for more info)
 - [Example](https://github.com/goar5670/Tinder-with-Chuck-Norris/pull/11/files#diff-f484a731d869bc4556afbd3420976bf793669886259a6ffcb88466b6c8356f59)
 
