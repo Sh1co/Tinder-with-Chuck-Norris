@@ -68,6 +68,12 @@ Your contributions are always welcome, please look at the [contribution guidelin
 <!-- CONTACT -->
 ## Contact
 
-Sherif Nafee - [Sh1co](https://github.com/Sh1co) - [s.nafee@innopolis.university](s.nafee@innopolis.university)
+Sherif Nafee - [Sh1co](https://github.com/Sh1co) - s.nafee@innopolis.university
+
+Mahmoud Mohamed - [goar5670](https://github.com/goar5670) - m.mohammed@innopolis.university
+
+Karim ElDakroury - [KelDakroury](https://github.com/KelDakroury) - k.eldakroury@innopolis.university
+
+Khaled Mohamed - [Ex-o](https://github.com/Ex-o) - k.mohamed@innopolis.university
 
 Project Link: [https://github.com/Sh1co/Tinder-with-Chuck-Norris](https://github.com/Sh1co/Tinder-with-Chuck-Norris)
