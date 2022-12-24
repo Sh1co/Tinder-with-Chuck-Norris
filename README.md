@@ -13,6 +13,12 @@
 </div>
 
 <p align="center">
+    <a href="LICENSE">
+        <img
+          src="https://img.shields.io/badge/license-MIT-blue.svg"
+          alt="License"
+        />
+    </a>
     <a href="https://github.com/goar5670/Tinder-with-Chuck-Norris/actions/workflows/pdd.yml">
         <img
           src="https://github.com/goar5670/Tinder-with-Chuck-Norris/actions/workflows/pdd.yml/badge.svg"
