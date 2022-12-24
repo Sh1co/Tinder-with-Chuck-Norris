@@ -34,6 +34,10 @@ If you want to build apk from source run `flutter build apk`
 
 [Lastest APK version](https://github.com/Sh1co/Tinder-with-Chuck-Norris/releases/latest/download/chuck-norris.apk)
 
+## Contributing
+
+Your contributions are always welcome, please look at the [contribution guidelines](CONTRIBUTING.md) for the detailed instructions.
+
 <!-- CONTACT -->
 ## Contact
 
