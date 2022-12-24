@@ -10,12 +10,13 @@ class DeviceIdentifier {
 
   static Future<void> initUserID() async {
     final prefs = await SharedPreferences.getInstance();
-    String? deviceId = prefs.getString("DeviceID");
-    if (deviceId == null) {
+    String? deviceIdentifier = prefs.getString("DeviceID");
+    if (deviceIdentifier == null) {
       Random rnd = Random();
-      deviceId = String.fromCharCodes(Iterable.generate(
+      deviceIdentifier = String.fromCharCodes(Iterable.generate(
           12, (_) => _charList.codeUnitAt(rnd.nextInt(_charList.length))));
-      prefs.setString("DeviceID", deviceId);
+      prefs.setString("DeviceID", deviceIdentifier);
     }
+    deviceId = deviceIdentifier;
   }
 }
