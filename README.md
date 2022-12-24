@@ -65,15 +65,6 @@ If you want to build apk from source run `flutter build apk`
 
 Your contributions are always welcome, please look at the [contribution guidelines](CONTRIBUTING.md) for the detailed instructions.
 
-<!-- CONTACT -->
-## Contact
+## License
 
-Sherif Nafee - [Sh1co](https://github.com/Sh1co) - s.nafee@innopolis.university
-
-Mahmoud Mohamed - [goar5670](https://github.com/goar5670) - m.mohammed@innopolis.university
-
-Karim ElDakroury - [KelDakroury](https://github.com/KelDakroury) - k.eldakroury@innopolis.university
-
-Khaled Mohamed - [Ex-o](https://github.com/Ex-o) - k.mohamed@innopolis.university
-
-Project Link: [https://github.com/Sh1co/Tinder-with-Chuck-Norris](https://github.com/Sh1co/Tinder-with-Chuck-Norris)
+Our application is licensed under the [MIT License](LICENSE). This means that you are free to use, modify, and distribute the software as long as you include the appropriate credit and follow the terms of the license.
